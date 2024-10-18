@@ -3,6 +3,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -20,7 +21,6 @@ required_vars = [
     "AZURE_STORAGE_ACCOUNT",
     "AZURE_STORAGE_ACCOUNT_KEY",
     "AZURE_STORAGE_CONTAINER",
-    "AZURE_STORAGE_ENDPOINT",
     "PUBLIC_URL",
     "SYSTEM_MESSAGE"
 ]
