@@ -2,6 +2,7 @@ import os
 import logging
 from datetime import datetime
 from dotenv import load_dotenv
+import random
 import requests
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
@@ -117,6 +118,8 @@ def query_azure_openai(prompt, search_results):
  
 def save_to_markdown(query, vector_results, hybrid_results, answer, filename="output.md"):
     try:
+        random_suffix = random.randint(1000, 9999)
+        filename = filename.replace(".md", f"_{random_suffix}.md")
         with open(filename, "w", encoding="utf-8") as f:
             f.write(f"# Employee Benefits Query Result\n\n")
             f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")

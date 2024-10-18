@@ -22,6 +22,7 @@ required_vars = [
     "AZURE_STORAGE_ACCOUNT_KEY",
     "AZURE_STORAGE_CONTAINER",
     "PUBLIC_URL",
+    "BLOB_NAME",
     "SYSTEM_MESSAGE"
 ]
  
@@ -46,7 +47,7 @@ content = soup.body.get_text(separator='\n', strip=True)
 # Replace with your actual connection string and container name
 connection_string = f"DefaultEndpointsProtocol=https;AccountName={os.getenv("AZURE_STORAGE_ACCOUNT")};AccountKey={os.getenv("AZURE_STORAGE_ACCOUNT_KEY")};EndpointSuffix=core.windows.net"
 container_name = f"{os.getenv("AZURE_STORAGE_CONTAINER")}"
-blob_name = "manual_content.txt"
+blob_name = f"{os.getenv("BLOB_NAME")}"
 
 blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 container_client = blob_service_client.get_container_client(container_name)

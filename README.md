@@ -59,3 +59,4 @@ If you are new to Azure Machine Learning, see:
 - [Azure Machine Learning template reference](https://docs.microsoft.com/azure/templates/microsoft.machinelearningservices/allversions)
 - [Quickstart templates](https://azure.microsoft.com/resources/templates/)
 
+Run the 1-click deploy. Create AI Studio project. Create AI Search service. Add connections. Perform manual ingestion with import and vectorize your data. 
