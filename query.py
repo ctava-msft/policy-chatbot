@@ -51,7 +51,7 @@ def generate_embeddings(text):
         logger.error(f"Error generating embeddings: {e.response.text}")
         raise
  
-def query_azure_search(query, search_type='hybrid'):
+def query_azure_search(query, search_type='vector'):
     try:
         credential = AzureKeyCredential(os.getenv("AZURE_AISEARCH_KEY"))
         search_client = SearchClient(endpoint=os.getenv("AZURE_AISEARCH_ENDPOINT"),
@@ -60,23 +60,23 @@ def query_azure_search(query, search_type='hybrid'):
         v_query = VectorizedQuery(
             vector=generate_embeddings(query),
             k_nearest_neighbors=3,
-            fields="text_vector"
+            fields="embeddings"
         )
         print(v_query)
         if search_type == 'vector':
             results = search_client.search(
                 search_text=None,
                 vector_queries=[v_query],
-                select=["chunk_id", "parent_id", "chunk", "title"],
+                select=["document_num", "page_num", "chunk_num", "chunk_begin", "chunk_end", "chunk", "url"],
                 top=20
             )
-        elif search_type == 'hybrid':
-            results = search_client.search(
-                search_text=query,
-                vector_queries=[v_query],
-                select=["chunk_id", "parent_id", "chunk", "title"],
-                top=20
-            )
+        # elif search_type == 'hybrid':
+        #     results = search_client.search(
+        #         search_text=query,
+        #         vector_queries=[v_query],
+        #         select=["chunk_id", "parent_id", "chunk", "title"],
+        #         top=20
+        #     )
         else:
             raise ValueError("Invalid search type. Use 'vector' or 'hybrid'.")
        
@@ -121,25 +121,28 @@ def save_to_markdown(query, vector_results, hybrid_results, answer, filename="ou
         random_suffix = random.randint(1000, 9999)
         filename = filename.replace(".md", f"_{random_suffix}.md")
         with open(filename, "w", encoding="utf-8") as f:
-            f.write(f"# Employee Benefits Query Result\n\n")
+            f.write(f"# Query Result\n\n")
             f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
             f.write(f"## Query\n\n{query}\n\n")
            
-            f.write("## Vector Search Results\n\n")
+            f.write("## Search Results\n\n")
             for result in vector_results:
-                f.write(f"Title: {result['title']}\n")
-                f.write(f"Chunk ID: {result['chunk_id']}\n")
-                f.write(f"Parent ID: {result['parent_id']}\n")
-                f.write(f"Score: {result['@search.score']}\n")
-                f.write(f"Content: {result['chunk'][:100]}...\n\n")
+                f.write(f"Doc Num: {result['document_num']}\n")
+                f.write(f"Page Num: {result['page_num']}\n")
+                f.write(f"Chunk Num: {result['chunk_num']}\n")
+                f.write(f"Chunk Begin: {result['chunk_begin']}\n")
+                f.write(f"Chunk End: {result['chunk_end']}\n")
+                f.write(f"Chunk: {result['chunk'][:100]}...\n")
+                f.write(f"URL: {result['url']}\n")
+                f.write(f"Score: {result['@search.score']}\n\n")
            
-            f.write("## Hybrid Search Results\n\n")
-            for result in hybrid_results:
-                f.write(f"Title: {result['title']}\n")
-                f.write(f"Chunk ID: {result['chunk_id']}\n")
-                f.write(f"Parent ID: {result['parent_id']}\n")
-                f.write(f"Score: {result['@search.score']}\n")
-                f.write(f"Content: {result['chunk'][:100]}...\n\n")
+            # f.write("## Hybrid Search Results\n\n")
+            # for result in hybrid_results:
+            #     f.write(f"Title: {result['title']}\n")
+            #     f.write(f"Chunk ID: {result['chunk_id']}\n")
+            #     f.write(f"Parent ID: {result['parent_id']}\n")
+            #     f.write(f"Score: {result['@search.score']}\n")
+            #     f.write(f"Content: {result['chunk'][:100]}...\n\n")
            
             f.write(f"## Answer\n\n{answer}\n")
         logger.info(f"Response and results saved to {filename}")
@@ -154,33 +157,36 @@ def main():
    
     if query:
         vector_results = query_azure_search(query, 'vector')
-        hybrid_results = query_azure_search(query, 'hybrid')
-        if vector_results:
-            print("Vector Search Results:")
-            for result in vector_results:
-                print(f"Title: {result['title']}")
-                print(f"Chunk ID: {result['chunk_id']}")
-                print(f"Parent ID: {result['parent_id']}")
-                print(f"Score: {result['@search.score']}")
-                print(f"Content: {result['chunk'][:100]}...\n")
+        #hybrid_results = query_azure_search(query, 'hybrid')
+        # if vector_results:
+        #     print("Vector Search Results:")
+        #     for result in vector_results:
+        #         print(f"Doc Num: {result['document_num']}")
+        #         print(f"Page Num: {result['page_num']}")
+        #         print(f"Chunk Num: {result['chunk_num']}")
+        #         print(f"Chunk Begin: {result['chunk_begin']}")
+        #         print(f"Chunk End: {result['chunk_end']}")
+        #         print(f"Chunk: {result['chunk'][:100]}...\n")
+        #         print(f"Score: {result['@search.score']}")
+       
+        # if vector_results:
+        #     print("\nHybrid Search Results:")
+        #     for result in hybrid_results:
+        #         print(f"Title: {result['title']}")
+        #         print(f"Chunk ID: {result['chunk_id']}")
+        #         print(f"Parent ID: {result['parent_id']}")
+        #         print(f"Score: {result['@search.score']}")
+        #         print(f"Content: {result['chunk'][:100]}...\n")
+       
+        # combined_results = vector_results + hybrid_results
        
         if vector_results:
-            print("\nHybrid Search Results:")
-            for result in hybrid_results:
-                print(f"Title: {result['title']}")
-                print(f"Chunk ID: {result['chunk_id']}")
-                print(f"Parent ID: {result['parent_id']}")
-                print(f"Score: {result['@search.score']}")
-                print(f"Content: {result['chunk'][:100]}...\n")
-       
-        combined_results = vector_results + hybrid_results
-       
-        if combined_results:
-            answer = query_azure_openai(query, combined_results)
+            #answer = query_azure_openai(query, combined_results)
+            answer = query_azure_openai(query, vector_results)
             if answer:
                 print("Answer:")
                 print(answer)
-                save_to_markdown(query, vector_results, hybrid_results, answer)
+                save_to_markdown(query, vector_results, vector_results, answer)
             else:
                 logger.error("Failed to get a response from Azure OpenAI.")
         else:
