@@ -67,13 +67,6 @@ with open(download_file_path, 'r', encoding="utf-8") as file:
 # This needs to be the same value for all sections in the same manual.
 document_uuid = str(uuid.uuid4())
 
-# Define regex pattern to split by sections
-pattern = r'\d+\.\d*\s+'
-
-# Split text into sections
-chunks = re.split(pattern, text)
-documents = []
-current_position = 0
 
 def generate_embeddings(text):
     headers = {
@@ -96,6 +89,12 @@ def generate_embeddings(text):
     except requests.exceptions.RequestException as e:
         logger.error(f"Error generating embeddings: {e.response.text}")
         raise
+
+# Split text into sections
+pattern = r'\d+\.\d*\s+' # Define regex pattern to split by sections
+chunks = re.split(pattern, text)
+documents = []
+current_position = 0
 
 for i, chunk in enumerate(chunks):
     if chunk.strip():  # Skip empty sections
