@@ -66,14 +66,14 @@ fields = [
 vector_search = VectorSearch(
     algorithms=[
         HnswAlgorithmConfiguration(
-            name="default",
+            name="default-HNSW",
+            kind=VectorSearchAlgorithmKind.HNSW,
             parameters=HnswParameters(
                 metric=VectorSearchAlgorithmMetric.COSINE
             ),
-            kind=VectorSearchAlgorithmKind.HNSW,
         ),
         ExhaustiveKnnAlgorithmConfiguration(
-            name="default_exhaustive_knn",
+            name="default",
             kind=VectorSearchAlgorithmKind.EXHAUSTIVE_KNN,
             parameters=ExhaustiveKnnParameters(
                 metric=VectorSearchAlgorithmMetric.COSINE
@@ -86,8 +86,8 @@ vector_search = VectorSearch(
             algorithm_configuration_name="default",
         ),
         VectorSearchProfile(
-            name="myExhaustiveKnnProfile",
-            algorithm_configuration_name="default_exhaustive_knn",
+            name="default-HNSW",
+            algorithm_configuration_name="default-HNSW",
         ),
     ],
 )
