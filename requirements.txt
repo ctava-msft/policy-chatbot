@@ -4,7 +4,11 @@ azure-mgmt-cognitiveservices
 azure-search
 azure-search-documents
 BeautifulSoup4
-requests
+chardet
+flask
+msal
+Office365-REST-Python-Client
 openai
 python-dotenv
+requests
 sentence_transformers
