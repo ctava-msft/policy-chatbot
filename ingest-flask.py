@@ -18,11 +18,11 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 # Define the necessary parameters
-tenant_id = "63df753b-2e0c-4f93-a4c8-ab54f7e97f7f"
-client_id = "21073a13-1007-45fb-8e09-f8499ca2da16"
+tenant_id = "REDACTED"
+client_id = "REDACTED"
 authority = f"https://login.microsoftonline.com/{tenant_id}"
-scope = ["https://searchagent.sharepoint.com/.default"]
-site_url = "https://searchagent.sharepoint.com/sites/AIRecipes"
+scope = ["https://.sharepoint.com/.default"]
+site_url = "https://.sharepoint.com/sites/"
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
