@@ -10,5 +10,6 @@ msal
 Office365-REST-Python-Client
 openai
 python-dotenv
+PyMuPDF
 requests
 sentence_transformers

@@ -4,13 +4,14 @@ import os
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
-#from sentence_transformers import SentenceTransformer
 
 import logging
 import os
 import requests
+import time
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 from dotenv import load_dotenv
+import fitz  # PyMuPDF
 
 load_dotenv()
 
@@ -58,15 +59,36 @@ download_file_path = os.path.join(os.getcwd(), BLOB_FILE_NAME)
 with open(download_file_path, "wb") as download_file:
     download_file.write(blob_client.download_blob().readall())
 
-# Process the file using Sentence Transformer
-#model = SentenceTransformer('all-MiniLM-L6-v2')
-with open(download_file_path, 'r', encoding="utf-8") as file:
-    text = file.read()
+# Process the file
+# with open(download_file_path, 'r', encoding="ISO-8859-1") as file:
+#     text = file.read()
+
+# Function to extract text from PDF
+def extract_text_from_pdf(pdf_path):
+    pages_text = []
+    with fitz.open(pdf_path) as pdf_document:
+        for page_num in range(len(pdf_document)):
+            page = pdf_document.load_page(page_num)
+            pages_text.append(page.get_text())
+    return pages_text
+
+# Extract text from the downloaded PDF
+pages_text = extract_text_from_pdf(download_file_path)
+
+# Function to extract text from PDF
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with fitz.open(pdf_path) as pdf_document:
+        for page_num in range(len(pdf_document)):
+            page = pdf_document.load_page(page_num)
+            text += page.get_text()
+    return text
+
+# Extract text from the downloaded PDF
+text = extract_text_from_pdf(download_file_path)
 
 # Document UUID
-# This needs to be the same value for all sections in the same manual.
 document_uuid = str(uuid.uuid4())
-
 
 def generate_embeddings(text):
     headers = {
@@ -91,16 +113,55 @@ def generate_embeddings(text):
         raise
 
 # Split text into sections
+
+def count_tokens(text):
+    return len(text.split())
+
+# Function to split text into chunks based on token count
+def chunk_text_by_tokens(text, max_tokens):
+    words = text.split()
+    chunks = []
+    current_chunk = []
+    current_length = 0
+    for word in words:
+        if current_length + len(word.split()) <= max_tokens:
+            current_chunk.append(word)
+            current_length += len(word.split())
+        else:
+            chunks.append(" ".join(current_chunk))
+            current_chunk = [word]
+            current_length = len(word.split())
+    if current_chunk:
+        chunks.append(" ".join(current_chunk))
+    return chunks
+
 pattern = r'\d+\.\d*\s+' # Define regex pattern to split by sections
-chunks = re.split(pattern, text)
+sections = re.split(pattern, text)
 documents = []
 current_position = 0
+
+max_tokens = 7000
+chunks = []
+
+for page_text in pages_text:
+    if page_text.strip():  # Skip empty pages
+        chunks.extend(chunk_text_by_tokens(page_text, max_tokens))
+
+# for section in sections:
+#     if section.strip():  # Skip empty sections
+#         chunks.extend(chunk_text_by_tokens(section, max_tokens))
+
+# def chunk_text_fixed_length(text, max_length):
+#     return [text[i:i + max_length] for i in range(0, len(text), max_length)]
+
+# chunks = chunk_text_fixed_length(text, length)
 
 for i, chunk in enumerate(chunks):
     if chunk.strip():  # Skip empty sections
         begin = current_position
         end = current_position + len(chunk)
         embeddings = generate_embeddings(chunk)
+        time.sleep(0.5)
         document = {
             "@search.action": "upload",
             "id": str(uuid.uuid4()),
