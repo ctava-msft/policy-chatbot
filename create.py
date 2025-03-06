@@ -8,6 +8,11 @@ from azure.search.documents.indexes.models import (
     SearchableField,
     SearchField,
     SearchFieldDataType,
+    SemanticConfiguration,
+    SemanticConfiguration,
+    SemanticPrioritizedFields,
+    SemanticField,
+    SemanticSearch,
     VectorSearch,
     HnswAlgorithmConfiguration,
     ExhaustiveKnnAlgorithmConfiguration,
@@ -42,6 +47,16 @@ for var in required_vars:
         raise ValueError(f"Missing required environment variable: {var}")
 
 credential = AzureKeyCredential(admin_key)
+
+
+# Define the semantic configuration
+semantic_config = SemanticConfiguration(
+    name="default",
+    prioritized_fields=SemanticPrioritizedFields(
+        prioritized_content_fields=[SemanticField(field_name="chunk")]
+    )
+)
+
 index_client = SearchIndexClient(endpoint=endpoint, credential=credential)
 
 fields = [
