@@ -1,4 +1,5 @@
 azure-ai-ml
+azure-ai-inference
 azure-identity
 azure-mgmt-cognitiveservices
 azure-search

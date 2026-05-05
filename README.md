@@ -34,6 +34,7 @@ The following table describes the resources created in the deployment:
 ```
 python -m venv .venv
 .venv\Scripts\activate
+pip install azure-ai-inference
 pip install -r requirements.txt
 ```
 
